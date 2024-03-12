@@ -1,0 +1,63 @@
+{
+    "paths":
+    {
+        "train_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/ego/eth/hotel_train/08_12_01/ego_samples.pkl"],
+        "val_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/ego/eth/hotel_val/08_12_01/ego_samples.pkl"],
+        "test_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/ego/eth/hotel_test/08_12_01/ego_samples.pkl"],
+        "result_path": "/workspace/data/trained_models"
+    },
+    "model_params":
+    {
+        "delta_t": 0.4,
+        "max_input_horizon": 8,
+        "forecast_horizon": 12,
+        "num_gaussians": 3,
+        "lstm_input_shape": 4,
+        "lstm_hidden_size": 18,
+        "lstm_num_layers": 4,
+        "output_factor": 6
+    },
+    "train_params":
+    {
+        "resume_training": false,
+        "randomize_train_data": true,
+        "dynamic_input_horizon": true,
+        "min_dynamic_input_horizon": 1,
+        "lr_default": 1e-3,
+        "lr_start_factor": 1.0,
+        "lr_end_factor": 0.0001,
+        "batch_size": 128,
+        "batch_reduction": 1.0,
+        "train_epochs": 2500,
+        "eval_epoch_step": 500,
+        "plot_examples": false,
+        "plot_step": 1024,
+        "plot_examples_to_map": false,
+        "plot_map_step": 1024
+    },
+    "eval_metrics":
+    {
+        "ade_fde": true,
+        "ade_fde_k": true,
+        "reliability": true,
+        "sharpness": true,
+        "asaee": true
+    },
+    "test_params":
+    {
+        "batch_size": 128,
+        "num_input_horizons": 8,
+        "num_k_samples": 20,
+        "num_samples": 1000,
+        "confidence_levels": [0.68, 0.95],
+        "test_horizons": [0,1,2,3,4,5,6,7,8,9,10,11],
+        "mesh_range_x": 16,
+        "mesh_range_y": 16,
+        "mesh_resolution": 0.1,
+        "plot_examples": true,
+        "plot_step": 64,
+        "plot_examples_to_map": false,
+        "plot_map_step": 256,
+        "vis_confidence_style": ["--", ":"]
+    }
+}

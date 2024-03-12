@@ -1,0 +1,63 @@
+{
+    "paths":
+    {
+        "train_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/imptc/pedestrian/train/25_75_25/ego_samples.pkl"],
+        "val_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/imptc/pedestrian/eval/25_75_25/ego_samples.pkl"],
+        "test_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/imptc/pedestrian/test/25_75_25/ego_samples.pkl"],
+        "result_path": "/workspace/data/trained_models"
+    },
+    "model_params":
+    {
+        "delta_t": 0.04,
+        "max_input_horizon": 25,
+        "forecast_horizon": 75,
+        "num_gaussians": 3,
+        "lstm_input_shape": 4,
+        "lstm_hidden_size": 10,
+        "lstm_num_layers": 1,
+        "output_factor": 6
+    },
+    "train_params":
+    {
+        "resume_training": false,
+        "randomize_train_data": true,
+        "dynamic_input_horizon": true,
+        "min_dynamic_input_horizon": 1,
+        "lr_default": 1e-3,
+        "lr_start_factor": 1.0,
+        "lr_end_factor": 0.0001,
+        "batch_size": 1024,
+        "batch_reduction": 1.0,
+        "train_epochs": 5000,
+        "eval_epoch_step": 500,
+        "plot_examples": false,
+        "plot_step": 1024,
+        "plot_examples_to_map": false,
+        "plot_map_step": 1024
+    },
+    "eval_metrics":
+    {
+        "ade_fde": false,
+        "ade_fde_k": false,
+        "reliability": false,
+        "sharpness": false,
+        "asaee": false
+    },
+    "test_params":
+    {
+        "batch_size": 128,
+        "num_input_horizons": 25,
+        "num_k_samples": 20,
+        "num_samples": 1000,
+        "confidence_levels": [0.95, 0.68],
+        "test_horizons": [24, 49, 74],
+        "mesh_range_x": 18,
+        "mesh_range_y": 18,
+        "mesh_resolution": 0.1,
+        "plot_examples": true,
+        "plot_step": 64,
+        "plot_examples_to_map": true,
+        "plot_map_step": 64,
+        "vis_confidence_style": ["--", ":"]
+    }
+}
