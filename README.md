@@ -153,5 +153,5 @@ testing.py --target=imptc --configs=default_peds_imptc.json --gpu=0 --log --prin
 <a name="license"></a>
 ## License:
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details
-
+ 
 ---
