@@ -4,17 +4,17 @@ import random
 
 
 def config_parser():
-    """Parse command line arguments
+    """parse command line arguments
     """
     
     p = argparse.ArgumentParser()
-    p.add_argument('-t', '--target', type=str, default='eth', required=True)
-    p.add_argument('-c', '--configs', type=str, default='all', required=True)
+    p.add_argument('-t', '--target', type=str, default='imptc')
+    p.add_argument('-c', '--configs', type=str, default='default_peds_imptc.json')
     p.add_argument('-l', '--log', action='store_true')
     p.add_argument('-p', '--print', action='store_true')
-    p.add_argument('-g', '--gpu', type=str, default=None)
-    p.set_defaults(log=False)
-    p.set_defaults(print=False)
+    p.add_argument('-g', '--gpu', type=str, default='0')
+    p.set_defaults(log=True)
+    p.set_defaults(print=True)
     
     return p
 
@@ -61,7 +61,7 @@ def build_R_inv(rotation_angle):
 
 
 def bat_mat_vec_mult(a, M):
-    """Simple helper for batched matrix multiplication (with einsum)
+    """simple helper for batched matrix multiplication (with einsum)
     
     Args:
         a (np.array): stack of track data
@@ -73,7 +73,7 @@ def bat_mat_vec_mult(a, M):
 
 
 def calc_velocities(t, s):
-    """Calc velocities for ego shifted position data
+    """calc velocities for ego shifted position data
     
     Args:
         t (np.array): sample data with [x,y,vx,vy]
@@ -103,7 +103,7 @@ def calc_velocities(t, s):
 
 
 def crop_trajectory(data, win_size, fh, shift=1, dims=2):
-    """High level method to partition a large trajectory with a sliding window
+    """high level method to partition a large trajectory with a sliding window
     
     Args:
         a (np.array): full track data
@@ -131,7 +131,7 @@ def crop_trajectory(data, win_size, fh, shift=1, dims=2):
 
 
 def rolling_window(a, shape, shift):
-    """Sliding window over a trajectory
+    """sliding window over a trajectory
     
     Args:
         a (np.array): input trajectory (e.g. 2d trajectory got the shape (n_samples,2))
@@ -159,7 +159,7 @@ def rolling_window(a, shape, shift):
 
 
 def estimate_ego_transform(X):
-    """Estimate a vrus moving direction 
+    """estimate a vrus moving direction 
     
     Args:
         X (np.array): stack of track data
@@ -192,7 +192,7 @@ def estimate_ego_transform(X):
 
 
 def world2ego(X, rotation_angle, translation, sample_rate):
-    """Transform from world coordinates to ego coordinates
+    """transform from world coordinates to ego coordinates
     
     Args:
         X (np.array): stack of track data
@@ -212,7 +212,7 @@ def world2ego(X, rotation_angle, translation, sample_rate):
 
 
 def ego2world(X, rotation_angle, translation):
-    """Transform from ego coordinates to world coordinates
+    """transform from ego coordinates to world coordinates
     
     Args:
         X (np.array): stack of track data
@@ -230,14 +230,14 @@ def ego2world(X, rotation_angle, translation):
 
 
 def count_model_parameters(model):
-    """Pytorch method to count a models parameter size
+    """pytorch method to count a models parameter size
     """
     
     return sum(p.numel() for p in model.parameters())
 
 
 def generate_unique_randoms(count, min_value, max_value):
-    """Generate unique random numbers within a given range
+    """generate unique random numbers within a given range
     """
     
     # create a set to store the generated random numbers

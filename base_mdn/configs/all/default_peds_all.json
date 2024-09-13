@@ -1,0 +1,81 @@
+{
+    "paths":
+    {
+        "train_data_paths": 
+        [
+            "/workspace/myr/trajdata/ego/imptc/train/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/ind/train/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/nuscenes/train/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/waymo/train/32_48_01_10.0/ego_samples.pkl"
+        ],
+        "val_data_paths": 
+        [
+            "/workspace/myr/trajdata/ego/imptc/eval/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/ind/eval/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/nuscenes/eval/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/waymo/eval/32_48_01_10.0/ego_samples.pkl"
+        ],
+        "test_data_paths":
+        [
+            "/workspace/myr/trajdata/ego/imptc/test/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/ind/test/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/nuscenes/test/32_48_01_10.0/ego_samples.pkl",
+            "/workspace/myr/trajdata/ego/waymo/test/32_48_01_10.0/ego_samples.pkl"
+        ],
+        "result_path": "/workspace/data/trained_models"
+    },
+    "model_params":
+    {
+        "delta_t": 0.1,
+        "max_input_horizon": 32,
+        "forecast_horizon": 48,
+        "num_gaussians": 3,
+        "lstm_input_shape": 4,
+        "lstm_hidden_size": 8,
+        "lstm_num_layers": 1,
+        "output_factor": 6
+    },
+    "train_params":
+    {
+        "resume_training": false,
+        "randomize_train_data": false,
+        "dynamic_input_horizon": false,
+        "min_dynamic_input_horizon": 32,
+        "lr_default": 1e-3,
+        "lr_start_factor": 1.0,
+        "lr_end_factor": 0.0001,
+        "batch_size": 4096,
+        "train_data_reduction": 0.2,
+        "eval_data_reduction": 0.1,
+        "train_epochs": 2500,
+        "eval_epoch_step": 2500,
+        "plot_examples": false,
+        "plot_step": 128,
+        "plot_examples_to_map": false,
+        "plot_map_step": 1024
+    },
+    "eval_metrics":
+    {
+        "ade_fde_k": true,
+        "reliability": true,
+        "sharpness": true,
+        "asaee": true
+    },
+    "test_params":
+    {
+        "batch_size": 128,
+        "num_input_horizons": 1,
+        "num_k_samples": 20,
+        "num_samples": 1000,
+        "confidence_levels": [0.95, 0.68],
+        "test_horizons": [7, 15, 23, 31, 39, 47],
+        "mesh_range_x": 28,
+        "mesh_range_y": 28,
+        "mesh_resolution": 0.2,
+        "plot_examples": false,
+        "plot_step": 256,
+        "plot_examples_to_map": false,
+        "plot_map_step": 1024,
+        "vis_confidence_style": [":", "--"]
+    }
+}

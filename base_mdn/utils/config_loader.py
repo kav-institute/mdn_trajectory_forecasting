@@ -35,7 +35,7 @@ class ConfigLoader:
         
         # eval and plotting
         self.reliability_bins = [k for k in np.arange(0.0, 1.01, 0.01)]
-        palette = np.array(sns.color_palette(palette='deep', n_colors=len(self.test_params['test_horizons'])))
+        palette = np.array(sns.color_palette(palette='colorblind', n_colors=len(self.test_params['test_horizons'])))
         self.colors_rgb = copy.deepcopy(palette)
         self.colors_bgr = copy.deepcopy(palette)
         self.colors_bgr[:, [2, 0]] = self.colors_bgr[:, [0, 2]]
@@ -50,7 +50,7 @@ class ConfigLoader:
         self.test_ego_examples_path = os.path.join(self.result_path, 'testing', 'examples', 'ego')
         self.test_world_examples_path = os.path.join(self.result_path, 'testing', 'examples', 'world')
         
-        # create result dirs
+        # create result directory structure
         if not os.path.exists(self.result_path): os.makedirs(self.result_path) 
         if not os.path.exists(self.checkpoint_path): os.makedirs(self.checkpoint_path)
         if not os.path.exists(self.evaluation_path): os.makedirs(self.evaluation_path)

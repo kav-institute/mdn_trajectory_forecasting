@@ -1,0 +1,10 @@
+numpy
+opencv-python
+skimage
+termcolor
+seaborn
+matplotlib
+json
+six
+ffmpeg
+tqdm

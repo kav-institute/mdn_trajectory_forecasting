@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.init as init
 import torch.distributions as dist
 
 
@@ -29,6 +30,22 @@ class LSTM_Trajectory_Forecast(nn.Module):
         
         # output layer
         self.fc = nn.Linear(in_features=self.lstm_hidden_size, out_features=self.output_size*self.forecast_horizon)
+        
+        # initialize the weights of the LSTM and the fully connected layers using Xavier initialization
+        for name, param in self.lstm.named_parameters():
+            
+            if 'weight' in name:
+                
+                init.xavier_uniform_(param)
+                
+            elif 'bias' in name:
+                
+                # it's common to initialize biases with zeros
+                init.zeros_(param)  
+                
+        # initialize the weights of the fully connected layer
+        init.xavier_uniform_(self.fc.weight)
+        init.zeros_(self.fc.bias)
         
         
     def forward(self, x):
@@ -83,7 +100,6 @@ def NLL_MDN_loss(output, target, num_gaussians):
         
         return None, True
         
-    
     # compute the negative log likelihood loss for the mixture weights and the rest of the parameters
     mixture = dist.MixtureSameFamily(mixture, gaussians)
     params_loss = -mixture.log_prob(target).mean()

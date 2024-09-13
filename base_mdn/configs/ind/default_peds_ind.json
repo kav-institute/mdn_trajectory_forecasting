@@ -1,61 +1,61 @@
 {
     "paths":
     {
-        "train_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/ind/pedestrian/train/25_75_25/ego_samples.pkl"],
-        "val_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/ind/pedestrian/eval/25_75_25/ego_samples.pkl"],
-        "test_data_paths": ["/workspace/myr/kav_prediction/base_mdn/trajdata/ego/ind/pedestrian/test/25_75_25/ego_samples.pkl"],
+        "train_data_paths": ["/workspace/myr/trajdata/ego/ind/train/32_48_01_10.0/ego_samples.pkl"],
+        "val_data_paths": ["/workspace/myr/trajdata/ego/ind/eval/32_48_01_10.0/ego_samples.pkl"],
+        "test_data_paths": ["/workspace/myr/trajdata/ego/ind/test/32_48_01_10.0/ego_samples.pkl"],
         "result_path": "/workspace/data/trained_models"
     },
     "model_params":
     {
-        "delta_t": 0.04,
-        "max_input_horizon": 25,
-        "forecast_horizon": 75,
+        "delta_t": 0.1,
+        "max_input_horizon": 32,
+        "forecast_horizon": 48,
         "num_gaussians": 3,
         "lstm_input_shape": 4,
-        "lstm_hidden_size": 16,
-        "lstm_num_layers": 2,
+        "lstm_hidden_size": 8,
+        "lstm_num_layers": 1,
         "output_factor": 6
     },
     "train_params":
     {
         "resume_training": false,
         "randomize_train_data": true,
-        "dynamic_input_horizon": true,
-        "min_dynamic_input_horizon": 1,
+        "dynamic_input_horizon": false,
+        "min_dynamic_input_horizon": 32,
         "lr_default": 1e-3,
         "lr_start_factor": 1.0,
         "lr_end_factor": 0.0001,
-        "batch_size": 1024,
-        "batch_reduction": 1.0,
-        "train_epochs": 5000,
-        "eval_epoch_step": 500,
+        "batch_size": 4096,
+        "train_data_reduction": 0.5,
+        "eval_data_reduction": 0.5,
+        "train_epochs": 2500,
+        "eval_epoch_step": 2500,
         "plot_examples": false,
-        "plot_step": 1024,
+        "plot_step": 256,
         "plot_examples_to_map": false,
         "plot_map_step": 1024
     },
     "eval_metrics":
     {
-        "ade_fde": false,
-        "ade_fde_k": false,
-        "reliability": false,
-        "sharpness": false,
-        "asaee": false
+        "ade_fde_k": true,
+        "reliability": true,
+        "sharpness": true,
+        "asaee": true
     },
     "test_params":
     {
         "batch_size": 128,
-        "num_input_horizons": 25,
+        "num_input_horizons": 32,
         "num_k_samples": 20,
         "num_samples": 1000,
         "confidence_levels": [0.95, 0.68],
-        "test_horizons": [24, 49, 74],
-        "mesh_range_x": 20,
-        "mesh_range_y": 20,
+        "test_horizons": [7, 15, 23, 31, 39, 47],
+        "mesh_range_x": 18,
+        "mesh_range_y": 18,
         "mesh_resolution": 0.1,
-        "plot_examples": true,
-        "plot_step": 64,
+        "plot_examples": false,
+        "plot_step": 256,
         "plot_examples_to_map": false,
         "plot_map_step": 64,
         "vis_confidence_style": ["--", ":"]

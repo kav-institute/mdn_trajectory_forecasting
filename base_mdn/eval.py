@@ -40,7 +40,6 @@ class MDN_Forecaster:
         self.reliability_bins = cfg.reliability_bins
         
         # metrics
-        self.with_ade_fde = self.eval_metrics['ade_fde']
         self.with_ade_fde_k = self.eval_metrics['ade_fde_k']
         self.with_reliability = self.eval_metrics['reliability']
         self.with_sharpness = self.eval_metrics['sharpness']
@@ -78,8 +77,8 @@ class MDN_Forecaster:
         confidence_sets = []
         sharpness_sets = []
         aee_sets = []
-        k_samples_aee_sets = []
-        euc_errors_sets = []
+        min_ade_sets = []
+        min_fde_sets = []
         batch_run_time = []
         
         # create meash grid for ego coordinates
@@ -110,25 +109,28 @@ class MDN_Forecaster:
                 
                 if self.with_ade_fde_k:
                     
-                    # get k samples from distributions
-                    num_k_samples = self.sample_mdn(filtered_outputs, num_gaussians=self.num_gaussians, n_samples=self.test_params['num_k_samples'])
+                    # get k samples from distributions with probabilities
+                    k_samples, k_probs = self.sample_with_probs(filtered_outputs, num_gaussians=self.num_gaussians, n_samples=self.test_params['num_k_samples'])
+                    
+                    # sort k samples by probabilities
+                    _, k_sorted_indices = torch.topk(k_probs, k=self.test_params['num_k_samples'], dim=0)
+                    k_sorted_samples = k_samples.gather(dim=0, index=k_sorted_indices.unsqueeze(-1).expand(-1, -1, -1, 2))
                     
                     # get euclidean errors for k samples over defined future time steps of batch
-                    euc_errors = torch.sqrt(torch.square(filtered_targets - num_k_samples).sum(dim=-1)).cpu().numpy()
-                    euc_errors = np.transpose(euc_errors, (1, 2, 0))
+                    euc_errors = torch.sqrt(torch.square(filtered_targets - k_sorted_samples).sum(dim=-1)).cpu().numpy()
                     
                     # get smallest errors of k samples over defined future time steps of batch
-                    k_samples_aee_sets.append(euc_errors.min(axis=2))
+                    min_ade_sets.append(euc_errors.mean(axis=2).min(axis=0))
                     
                     # get smallest error of k trajectories over defined future time steps of batch
-                    euc_errors_sets.append(euc_errors)
+                    min_fde_sets.append(euc_errors[:,:,-1].min(axis=0))
                 
                 if self.with_reliability:
                     
                     # build confidence sets
                     confidence_sets.append(self.build_confidence_set_mdn(output=filtered_outputs, target=filtered_targets, num_gaussians=self.num_gaussians, n_samples=self.n_samples).cpu().numpy())
                     
-                if self.with_sharpness or self.with_ade_fde or self.with_asaee:
+                if self.with_sharpness or self.with_asaee:
                     
                     # do for every single sample one by one
                     for idx in range(0, filtered_outputs.shape[0]):
@@ -147,7 +149,7 @@ class MDN_Forecaster:
                                 
                             sharpness_batch.append(torch.stack(sharpness, 0))
                             
-                        if self.with_asaee or self.with_ade_fde:
+                        if self.with_asaee:
                             
                             # get most likely position for every defined time step for EE calculation
                             modes_batch.append(grid[torch.argmin(conf_map, dim=0, keepdim=True)][0,:,0,:])
@@ -157,7 +159,7 @@ class MDN_Forecaster:
                         # stack sharpness batches
                         sharpness_sets.append(torch.stack(sharpness_batch, 0).cpu().numpy())
                         
-                    if self.with_asaee or self.with_ade_fde:
+                    if self.with_asaee:
                         
                         # get euclidean errors
                         aee_sets.append(torch.sqrt(torch.square(filtered_targets - torch.stack(modes_batch, 0)).sum(dim=-1)).cpu().numpy())
@@ -234,94 +236,29 @@ class MDN_Forecaster:
                 f.write(f"ASAEE: {ASAEE:.2f} m/s")
                 f.close()
                 
-            if self.with_ade_fde:
-                
-                ade_by_steps = [round(np.mean(n),3) for n in np.vstack(aee_sets).T]
-                ade_final = np.mean(ade_by_steps)
-                
-                if self.cfg.with_print: print(colored(f"====================", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f"====================")
-                if self.cfg.with_print: print(colored(f"Most likely: ", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f"Most likely: ")
-                
-                if self.cfg.with_print: 
-                    for idx, step in enumerate(self.test_params['test_horizons']): print(colored(f" EE @ {round((step+1)*self.dt, 1)} sec: {str(round(ade_by_steps[idx], 2))} m", 'magenta'))
-                if self.cfg.with_log:
-                    for idx, step in enumerate(self.test_params['test_horizons']): self.logger.info(f" EE @ {round((step+1)*self.dt, 1)} sec: {str(round(ade_by_steps[idx], 2))} m")
-                    
-                if self.cfg.with_print: print(colored(f"--------------------", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f"--------------------")
-                if self.cfg.with_print: print(colored(f" ADE: {str(round(ade_final, 2))} m", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f" ADE: {str(round(ade_final, 2))} m")
-                
-                fde_final = [round(np.mean(n),3) for n in np.vstack(aee_sets).T][-1]
-                if self.cfg.with_print: print(colored(f" FDE: {str(round(fde_final, 2))} m", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f" FDE: {str(round(fde_final, 2))} m")
-                
-                f = open(os.path.join(self.dst_dir, 'ade_fde.txt'), "w")
-                f.write("Most likely:")
-                f.write(f"\n--------------------:")
-                for idx, step in enumerate(self.test_params['test_horizons']): f.write(f"\n EE @ {round((step+1)*self.dt, 1)} sec: {str(round(ade_by_steps[idx], 2))} m")
-                f.write(f"\n--------------------:")
-                f.write(f"\nADE: {str(round(ade_final, 2))} m \nFDE: {str(round(fde_final, 2))} m")
-                f.close()
-                
             if self.with_ade_fde_k:
                 
-                # ade of best of k samples
-                k_ade_by_steps = [round(np.mean(n),3) for n in np.vstack(k_samples_aee_sets).T]
-                k_ade_final = np.mean(k_ade_by_steps)
+                # min ade of k samples
+                min_ade_k = round(np.hstack(min_ade_sets).mean(),3)
                 if self.cfg.with_print: print(colored(f"====================", 'magenta'))
                 if self.cfg.with_log: self.logger.info(f"====================")
-                if self.cfg.with_print: print(colored(f"Best of K ({self.test_params['num_k_samples']}) samples for each future horizon: ", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f"Best of K ({self.test_params['num_k_samples']}) samples for each future horizon: ")
-                
-                if self.cfg.with_print: 
-                    for idx, step in enumerate(self.test_params['test_horizons']): print(colored(f" EE @ {round((step+1)*self.dt, 1)} sec: {str(round(k_ade_by_steps[idx], 2))} m", 'magenta'))
-                if self.cfg.with_log: 
-                    for idx, step in enumerate(self.test_params['test_horizons']): self.logger.info(f" EE @ {round((step+1)*self.dt, 1)} sec: {str(round(k_ade_by_steps[idx], 2))} m")
+                if self.cfg.with_print: print(colored(f"Best of K ({self.test_params['num_k_samples']}) min ADE/FDE ", 'magenta'))
+                if self.cfg.with_log: self.logger.info(f"Best of K ({self.test_params['num_k_samples']}) min ADE/FDE: ")
                 
                 if self.cfg.with_print: print(colored(f"--------------------", 'magenta'))
                 if self.cfg.with_log: self.logger.info(f"--------------------")
-                if self.cfg.with_print: print(colored(f" ADE: {str(round(k_ade_final, 2))} m", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f" ADE: {str(round(k_ade_final, 2))} m")
+                if self.cfg.with_print: print(colored(f" min ADE K: {str(round(min_ade_k, 2))} m", 'magenta'))
+                if self.cfg.with_log: self.logger.info(f" min ADE K: {str(round(min_ade_k, 2))} m")
                 
-                # fde of best of k samples
-                k_fde_final = [round(np.mean(n),3) for n in np.vstack(k_samples_aee_sets).T][-1]
-                if self.cfg.with_print: print(colored(f" FDE: {str(round(k_fde_final, 2))} m", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f" FDE: {str(round(k_fde_final, 2))} m")
-                
-                # # ade of best of k trajectories
-                k_euc_errors = np.vstack(euc_errors_sets)
-                min_ids = np.argmin(np.mean(k_euc_errors, axis=1), axis=1)
-                k_ade_trajectories_by_step = np.mean(np.array([k_euc_errors[n,:,i] for n, i in enumerate(min_ids)]), axis=0)
-                k_ade_trajectories_final = np.mean(np.min(np.mean(k_euc_errors, axis=1), axis=1))
-                
-                if self.cfg.with_print: print(colored(f"====================", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f"====================")
-                if self.cfg.with_print: print(colored(f"Best of K ({self.test_params['num_k_samples']}) full sampled trajectories: ", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f"Best of K ({self.test_params['num_k_samples']}) full sampled trajectories: ")
-                
-                if self.cfg.with_print: 
-                    for idx, step in enumerate(self.test_params['test_horizons']): print(colored(f" EE @ {round((step+1)*self.dt, 1)} sec: {str(round(k_ade_trajectories_by_step[idx], 2))} m", 'magenta'))
-                if self.cfg.with_log: 
-                    for idx, step in enumerate(self.test_params['test_horizons']): self.logger.info(f" EE @ {round((step+1)*self.dt, 1)} sec: {str(round(k_ade_trajectories_by_step[idx], 2))} m")
-                
-                if self.cfg.with_print: print(colored(f"--------------------", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f"--------------------")
-                if self.cfg.with_print: print(colored(f" ADE: {str(round(k_ade_trajectories_final, 2))} m", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f" ADE: {str(round(k_ade_trajectories_final, 2))} m")
-                
-                # fde of best of k trajectories
-                if self.cfg.with_print: print(colored(f" FDE: {str(round(k_ade_trajectories_by_step[-1], 2))} m", 'magenta'))
-                if self.cfg.with_log: self.logger.info(f" FDE: {str(round(k_ade_trajectories_by_step[-1], 2))} m")
+                # min fde of k samples
+                min_fde_k = round(np.hstack(min_fde_sets).mean(),3)
+                if self.cfg.with_print: print(colored(f" min FDE K: {str(round(min_fde_k, 2))} m", 'magenta'))
+                if self.cfg.with_log: self.logger.info(f" min FDE K: {str(round(min_fde_k, 2))} m")
                 
                 f = open(os.path.join(self.dst_dir, 'ade_fde_k.txt'), "w")
                 f.write(f"Best of K ({self.test_params['num_k_samples']}):")
                 f.write(f"\n--------------------:")
-                for idx, step in enumerate(self.test_params['test_horizons']): f.write(f"\n EE @ {round((step+1)*self.dt, 1)} sec: {str(round(k_ade_trajectories_by_step[idx], 2))} m")
-                f.write(f"\n--------------------:")
-                f.write(f"\nADE: {str(round(k_ade_trajectories_final, 2))} m \nFDE: {str(round(k_ade_trajectories_by_step[-1], 2))} m")
+                f.write(f"\nmin ADE: {str(round(min_ade_k, 2))} m \nmin FDE: {str(round(min_fde_k, 2))} m")
                 f.close()
         
         return
@@ -339,6 +276,7 @@ class MDN_Forecaster:
         # only for IMPTC and inD datasets
         if plot_map:
             
+            #TODO: replace hard coded directories
             if self.cfg.target == 'imptc':
                 
                 map_base_path = '/workspace/repos/data/imptc'
@@ -437,7 +375,8 @@ class MDN_Forecaster:
                                         epoch=epoch, 
                                         confidence_levels=confidence_levels,
                                         ade=ADE, 
-                                        fde=FDE)
+                                        fde=FDE,
+                                        src=src)
                 
                 # only for IMPTC and inD datasets
                 # plot forecast example results in world coordinates
@@ -445,7 +384,7 @@ class MDN_Forecaster:
                     
                     if self.cfg.target == 'imptc':
                     
-                        topview_map_base = cv.imread(os.path.join(map_base_path, 'intersection_map.png'))
+                        topview_map_base = cv.imread(os.path.join(map_base_path, 'imptc_topview_map.png'))
                         r_line_in = 6
                         r_line_out = 4
                         r_point = 10
@@ -548,11 +487,15 @@ class MDN_Forecaster:
         return area
     
     
-    def sample_mdn(self, output, num_gaussians, n_samples):
+    def sample_with_probs(self, output, num_gaussians, n_samples):
         
         # build distribution model
         gmm = self.build_distribution(output=output, num_gaussians=num_gaussians)
         
-        # create n samples
+        # get samples and compute log probabilities
+        tau = 1
         samples = gmm.sample(sample_shape=torch.Size([n_samples]))
-        return samples
+        samples_log_prob = gmm.log_prob(samples)
+        probs = torch.exp(samples_log_prob/tau) / torch.sum(torch.exp(samples_log_prob/tau), dim=0)
+    
+        return samples, probs

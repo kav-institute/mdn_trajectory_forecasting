@@ -269,6 +269,7 @@ def plot_reliability_calibration(confidence_sets, dst_dir, epoch, dt, steps, bin
     """
     
     # place/sort values into bins
+    # attention!: digitize() returns indexes, with first index starting at 1 not 0
     bin_data = np.digitize(confidence_sets, bins=bins)
     reliability_errors = []
     
@@ -278,15 +279,19 @@ def plot_reliability_calibration(confidence_sets, dst_dir, epoch, dt, steps, bin
     for idx in range(0, len(steps)):
         
         # build calibration curve
-        f0 = np.array(np.bincount(bin_data[:,idx])).T
-        acc_f0 = np.cumsum(f0,axis=0)/confidence_sets.shape[0]
+        # attention!: bincount() returns amount of each bin, first bin to count is bin at 0,
+        # due to digitize behavior must increment len(bins) by 1 and later ignore the zero bin count
+        f0 = np.array(np.bincount(bin_data[:,idx], minlength=len(bins)+1)).T
+        
+        # f0[1:]: because of the different start values of digitize and bincount, we remove/ignore the first value of f0
+        acc_f0 = np.cumsum(f0[1:],axis=0)/confidence_sets.shape[0]
         
         # get differences for current step
-        r = abs(acc_f0[0:len(bins)] - bins)
+        r = abs(acc_f0 - bins)
         reliability_errors.append(r)
         
         # visualize
-        plt.plot(bins,acc_f0[0:len(bins)], linewidth=3, label=f"{round((steps[idx]+1)*dt, 1)} sec @ avg: {(1 - np.mean(r))*100:.2f} %, min: {(1 - np.max(r))*100:.2f} %")
+        plt.plot(bins,acc_f0, linewidth=3, label=f"{round((steps[idx]+1)*dt, 1)} sec @ avg: {(1 - np.mean(r))*100:.1f} %, min: {(1 - np.max(r))*100:.1f} %")
         
     # get reliability scores
     reliability_avg_score = (1 - np.mean(reliability_errors))*100
@@ -295,24 +300,16 @@ def plot_reliability_calibration(confidence_sets, dst_dir, epoch, dt, steps, bin
     plt.grid()
     plt.xticks(fontsize = 12)
     plt.yticks(fontsize = 12)
-    plt.legend()
-    plt.title(f'Reliability at epoch: {epoch} - Avg: {reliability_avg_score:.2f} % - Min: {reliability_min_score:.2f} %')
+    plt.title(f'Reliability at epoch: {epoch} - Avg: {reliability_avg_score:.1f} % - Min: {reliability_min_score:.1f} %')
     
     # save plot
     path = os.path.join(dst_dir + '/reliability')
     
-    if not os.path.exists(path):
-        
-        os.mkdir(path)
-        
-    
-    if epoch is None:
-        
-        plt.savefig(os.path.join(path, f'reliability.png'))
-        
-    else:
-        
-        plt.savefig(os.path.join(path, f'reliability_epoch_{str(epoch).zfill(4)}.png'))
+    if not os.path.exists(path): os.mkdir(path)
+
+    plt.savefig(os.path.join(path, f'reliability_epoch_{str(epoch).zfill(4)}_plain.png'))
+    plt.legend(fontsize = 10)
+    plt.savefig(os.path.join(path, f'reliability_epoch_{str(epoch).zfill(4)}_legend.png'))
         
     plt.close()
     return reliability_avg_score, reliability_min_score, reliability_errors
@@ -363,24 +360,19 @@ def plot_sharpness_over_time(data, dst_dir, epoch, dt, confidence_levels, steps,
     ax1.tick_params(labelsize=11.5)
     ax1.set_xlabel('Forecast Horizon in s', fontsize=14)
     ax1.set_ylabel('Sharpness in m²', fontsize=14)
+    plt.xlim([0,4.8])
     plt.ylim([0,4])
-    plt.legend()
+    plt.legend(fontsize=16)
     fig.tight_layout()
     
     # save plot
     path = os.path.join(dst_dir, 'sharpness')
     
-    if not os.path.exists(path):
+    if not os.path.exists(path): os.mkdir(path)
         
-        os.mkdir(path)
+    if epoch is None: plt.savefig(os.path.join(path, f'sharpness.png'))
         
-    if epoch is None:
-        
-        plt.savefig(os.path.join(path, f'sharpness.png'))
-        
-    else:
-        
-        plt.savefig(os.path.join(path, f"sharpness_epoch_{str(epoch).zfill(4)}.png"))
+    else: plt.savefig(os.path.join(path, f"sharpness_epoch_{str(epoch).zfill(4)}.png"))
         
     plt.close()
     return sharpness_scores_list
@@ -446,7 +438,7 @@ def plot_aee_over_time(data, dst_dir, epoch, dt, steps, num_steps):
     return ASAEE
 
 
-def plot_ego_forecast(cfg, X, y, forecasts, modes, dst_dir, sample_id, epoch, confidence_levels, ade, fde):
+def plot_ego_forecast(cfg, X, y, forecasts, modes, dst_dir, sample_id, epoch, confidence_levels, ade, fde, src):
     """Plot ego forecast
     """
     
@@ -471,51 +463,41 @@ def plot_ego_forecast(cfg, X, y, forecasts, modes, dst_dir, sample_id, epoch, co
         mode_data.append(modes[s,:])
     
     # create figure
-    plt.figure(figsize=(16.8,10.5))
+    fig, ax = plt.subplots(figsize=(16.8,10.5))
     
     # plot most likely positions
     for l, m in enumerate(mode_data):
         
         color = cfg.colors_rgb[l]
         label = 'Most likely @ ' + str(round((cfg.test_params['test_horizons'][l] + 1) * cfg.model_params['delta_t'], 1)) + ' s'
-        plt.plot(m[0], m[1], marker='o', markersize=6, color=color, label=label)
+        plt.plot(m[0], m[1], marker='.', markersize=20, color=color, label=label)
     
     # plot confidence areas
     for idx, kappa in enumerate(confidence_levels):
-        
-        line_style = cfg.test_params['vis_confidence_style'][idx]
         
         for k, contours in enumerate(forecasts[idx]):
             
             color = cfg.colors_rgb[k]
             
             for n, c in enumerate(contours):
-            
-                # first, with label
-                if n == 0: 
-                    
-                    label = str(kappa) + f' % | ' + str(round((cfg.test_params['test_horizons'][k] + 1) * cfg.model_params['delta_t'], 1)) + ' s'
-                    plt.plot(c[:, 0], c[:, 1], linewidth=2, ls=line_style, color=color, label=label)
                 
-                # all other modes without label
-                else:
-                    
-                    plt.plot(c[:, 0], c[:, 1], linewidth=2, ls=line_style, color=color)
+                polygon = plt.Polygon(c, facecolor=color, edgecolor=color, alpha=0.25+(idx*0.25))
+                ax.add_patch(polygon)
                     
     # plot input and gt data
-    plt.plot(np.squeeze(X[:,:,0]), np.squeeze(X[:,:,1]), color='r', linewidth=2, label="Inputs", marker='^', markersize=6)
-    plt.plot(np.array(gt_data)[...,0], np.array(gt_data)[...,1], color='k', linewidth=2, label="Ground Truth", marker='^', markersize=6)
+    plt.plot(np.squeeze(X[:,:,0]), np.squeeze(X[:,:,1]), color='r', linewidth=2, label="Inputs", marker='.', markersize=16)
+    plt.plot(np.array(gt_data)[...,0], np.array(gt_data)[...,1], color='k', linewidth=2, label="Ground Truth", marker='.', markersize=16)
     
     plt.gca().set_aspect('equal')
     plt.grid()
-    plt.title(f'Sample: {sample_id} || ADE: {ade} || FDE: {fde}')
+    plt.title(f'Sample: {sample_id} || ADE: {ade} || FDE: {fde} || Source: {src}')
     plt.xlabel("x / m", fontsize = 24)
     plt.ylabel("y / m", fontsize = 24)
     plt.xticks(fontsize = 18)
     plt.yticks(fontsize = 18)
-    plt.xlim([-5, 5])
-    plt.ylim([-2.5, 7.5])
-    plt.legend(loc='upper right')
+    plt.xlim([-12, 12])
+    plt.ylim([-8, 16])
+    plt.legend(loc='upper right', fontsize=16)
     plt.savefig(os.path.join(dst_epoch_dir, f'sample_{str(sample_id).zfill(8)}.png'))
     plt.close()
     

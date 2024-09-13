@@ -160,7 +160,7 @@ class MDN_Trainer:
             val_loss_list = []
             
             # split eval data
-            eval_data_X, eval_data_y, _, _ = data_loader.get_eval_data()
+            eval_data_X, eval_data_y, _, _ ,_ = data_loader.get_eval_data()
             
             with torch.no_grad():
                 
