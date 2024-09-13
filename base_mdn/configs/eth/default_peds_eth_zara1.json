@@ -1,9 +1,9 @@
 {
     "paths":
     {
-        "train_data_paths": ["/workspace/myr/trajdata/ego/eth/zara1_train/08_12_01/ego_samples.pkl"],
-        "val_data_paths": ["/workspace/myr/trajdata/ego/eth/zara1_val/08_12_01/ego_samples.pkl"],
-        "test_data_paths": ["/workspace/myr/trajdata/ego/eth/zara1_test/08_12_01/ego_samples.pkl"],
+        "train_data_paths": ["/workspace/myr/trajdata/ego/eth/zara1_train/ego_samples.pkl"],
+        "val_data_paths": ["/workspace/myr/trajdata/ego/eth/zara1_val/ego_samples.pkl"],
+        "test_data_paths": ["/workspace/myr/trajdata/ego/eth/zara1_test/ego_samples.pkl"],
         "result_path": "/workspace/data/trained_models"
     },
     "model_params":

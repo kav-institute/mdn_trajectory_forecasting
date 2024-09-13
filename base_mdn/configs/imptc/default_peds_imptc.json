@@ -1,9 +1,9 @@
 {
     "paths":
     {
-        "train_data_paths": ["/workspace/myr/trajdata/ego/imptc/train/32_48_01_10.0/ego_samples.pkl"],
-        "val_data_paths": ["/workspace/myr/trajdata/ego/imptc/eval/32_48_01_10.0/ego_samples.pkl"],
-        "test_data_paths": ["/workspace/myr/trajdata/ego/imptc/test/32_48_01_10.0/ego_samples.pkl"],
+        "train_data_paths": ["/workspace/myr/trajdata/ego/imptc/train/ego_samples.pkl"],
+        "val_data_paths": ["/workspace/myr/trajdata/ego/imptc/eval/ego_samples.pkl"],
+        "test_data_paths": ["/workspace/myr/trajdata/ego/imptc/test/ego_samples.pkl"],
         "result_path": "/workspace/data/trained_models"
     },
     "model_params":

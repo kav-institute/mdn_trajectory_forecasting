@@ -84,13 +84,9 @@ We use pedestrian trajectory data from four popular road traffic datasets for ou
 ### Pre-trained Models and Datasets
 Pre-trained models and pre-processed training and evaluation data is provided within the table below.
 
-| Dataset       | Download Model | Download Data | Status    |
-|:-------------:|:--------------:|:-------------:|:---------:|
-| ETH           | tba            | tba           | $${\color{gray}na}$$ |
-| IMPTC         | tba            | tba           | $${\color{gray}na}$$ |
-| inD           | tba            | tba           | $${\color{gray}na}$$ |
-| NuScenes      | tba            | tba           | $${\color{gray}na}$$ |
-| Waymo         | tba            | tba           | $${\color{gray}na}$$ |
+| Dataset       | Models | Data | Status    |
+|:-------------:|:---------------:|:-------------:|:---------:|
+| All           | [[Download]](https://drive.google.com/file/d/1K3bcl-R-9K1TyH-e5ZiC8ljnH5UKZTqn/view?usp=drive_link)             | [[Download]](https://drive.google.com/file/d/17itbH_ufwHuAJwPv70KvXR1qrtwDcATA/view?usp=drive_link)          | $${\color{green}online}$$ |
 
 
 ---
