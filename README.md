@@ -154,5 +154,5 @@ If you want to use a pre-trained model you must locate it into the correct subfo
 <a name="license"></a>
 ## License:
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details
-
+ 
 ---
