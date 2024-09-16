@@ -153,9 +153,7 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 ---
 
-### Contributing
-
-We envision our Method as a community-driven project, we love to see how the project is growing thanks to the contributions from the community. We would love to see your face in the list below, just open a Pull Request!
+### Contributors
 
 <a href="https://github.com/kav-institute/mdn_trajectory_forecasting/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=kav-institute/mdn_trajectory_forecasting" />
