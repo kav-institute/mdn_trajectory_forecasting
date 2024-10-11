@@ -2,25 +2,23 @@
 
 !["Screenshot..."](images/mdn_preview_eccv_imptc.png "Screenshot...")
 
-#### Paper:
-**M. Hetzel, H. Reichert, K. Doll, and B. Sick , "Reliable Probabilistic Human Trajectory Prediction for Autonomous Applications", ECCV 2024, Mailand, Italy**
+This is the official implementation for: _**Reliable Probabilistic Human Trajectory Prediction for Autonomous Applications**_. 
+Paper: [[arXiv](https://arxiv.org/abs/2410.06905)] [[ResearchGate](https://www.researchgate.net/publication/384778609_Reliable_Probabilistic_Human_Trajectory_Prediction_for_Autonomous_Applications)]
 
-**Links:**
-- IEEE Explore: [[click here]]()
-- ResearchGate: [[click here]]()
-- ArXiv: [[click here]]()
+**ECCV 2024 UnCV-Workshop: Best-Paper-Award** :trophy: 
+
+_**Abstract**_ -- Autonomous systems, like vehicles or robots, require reliable, accurate, fast, resource-efficient, scalable, and low-latency trajectory predictions to get initial knowledge about future locations and movements of surrounding objects for safe human-machine interaction. Furthermore, they need to know the uncertainty of the predictions for risk assessment to provide safe path planning. This paper presents a lightweight method to address these requirements, combining Long Short-Term Memory and Mixture Density Networks. Our method predicts probability distributions, including confidence level estimations for positional uncertainty to support subsequent risk management applications and runs on a low-power embedded platform. We discuss essential requirements for human trajectory prediction in autonomous vehicle applications and demonstrate our method's performance using multiple traffic-related datasets. Furthermore, we explain reliability and sharpness metrics and show how important they are to guarantee the correctness and robustness of a model's predictions and uncertainty assessments. These essential evaluations have so far received little attention for no good reason. Our approach focuses entirely on real-world applicability. Verifying prediction uncertainties and a model's reliability are central to autonomous real-world applications.
 
 
-#### Citation:
-If you use our code/method, please cite:
-```
-@article{mdn,
-title={Reliable Probabilistic Human Trajectory Prediction for Autonomous Applications},
-author={Hetzel, M. and Reichert, H. and Doll, K. and Sick, B.},
-journal={IEEE/CVF European Conference On Computer Vision (ECCV)},
-year={2024},
-}
-```
+    @article{mdn,
+        title={Reliable Probabilistic Human Trajectory Prediction for Autonomous Applications},
+        author={Hetzel, M. and Reichert, H. and Doll, K. and Sick, B.},
+        journal={European Conference On Computer Vision (ECCV)},
+        year={2024},
+        organization={Springer},
+        doi={tba}
+    }
+
 
 !["Screenshot..."](images/mdn_preview_eccv_ind.png "Screenshot...")
 ---
@@ -56,7 +54,7 @@ CuDNN 8.9
 ```
 
 **Docker:**
-If you want to use docker, we recommend the Nvidia NGC Pytorch 23.08 image: [[Info]](https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/rel-23-08.html) [[Docker Image]](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch). Run the image and install the the corresponding python requirements.txt and your ready to go.
+If you want to use docker, we recommend the Nvidia NGC Pytorch 23.08 image: [[Info]](https://docs.nvidia.com/deeplearning/frameworks/pytorch-release-notes/rel-23-08.html) [[Docker Image]](https://catalog.ngc.nvidia.com/orgs/nvidia/containers/pytorch). Run the image and install the corresponding python requirements.txt and your ready to go.
 
 
 ---
@@ -64,19 +62,19 @@ If you want to use docker, we recommend the Nvidia NGC Pytorch 23.08 image: [[In
 ### Datasets
 We use pedestrian trajectory data from four popular road traffic datasets for our methods training and evaluation (NuScenes, Waymo, inD and IMPTC), as well as the ETH/UCY surveillance dataset for cross-comparison with different Human Trajectory Prediction (HTP) frameworks. For all datasets we extracted the raw pedestrians trajectories, applied a human-ego-centric coordinate system transformation as pre-processing, and subsampled the input- and output horizon data for training and evaluation. The four traffic related datasets are resampled to fixed 10.0 Hz sampling rate. The ETH/UCY dataset is untouched with a 2.5 Hz sampling rate. Additional information (Papers/Code/Data) about all used datasets can be found below:
 
-**IMPTC:** [[Info]](https://ieeexplore.ieee.org/document/10186776) [[Get raw data]](https://github.com/kav-institute/imptc-dataset)
+**IMPTC:** [[Paper]](https://ieeexplore.ieee.org/document/10186776) [[Data]](https://github.com/kav-institute/imptc-dataset)
 
 
-**inD:** [[Info]](https://ieeexplore.ieee.org/document/9304839) [[Get raw data]](https://github.com/ika-rwth-aachen/drone-dataset-tools)
+**inD:** [[Paper]](https://ieeexplore.ieee.org/document/9304839) [[Data]](https://github.com/ika-rwth-aachen/drone-dataset-tools)
 
 
-**nuScenes:** [[Info]](https://arxiv.org/abs/1903.11027) [[Get raw data]](https://github.com/nutonomy/nuscenes-devkit#nuscenes-setup)
+**nuScenes:** [[Paper]](https://arxiv.org/abs/1903.11027) [[Data]](https://github.com/nutonomy/nuscenes-devkit#nuscenes-setup)
 
 
-**Waymo:** [[Info]](https://arxiv.org/abs/1912.04838) [[Get raw data]](https://waymo.com/intl/en_us/open/download/)
+**Waymo:** [[Paper]](https://arxiv.org/abs/1912.04838) [[Data]](https://waymo.com/intl/en_us/open/download/)
 
 
-**ETH/UCY:** [[Info]](https://ieeexplore.ieee.org/document/5459260) [[Get raw data]](https://github.com/StanfordASL/Trajectron-plus-plus/tree/master/experiments/pedestrians/raw/raw/all_data)
+**ETH/UCY:** [[Paper]](https://ieeexplore.ieee.org/document/5459260) [[Data]](https://github.com/StanfordASL/Trajectron-plus-plus/tree/master/experiments/pedestrians/raw/raw/all_data)
 
 
 ---
@@ -92,7 +90,7 @@ Pre-trained models and pre-processed training and evaluation data is provided wi
 ---
 <a name="prepro"></a>
 ### Data Preprocessing
-We extracted all pedestrian trajectories from NuScenes, Waymo, inD and IMPTC datasets. For NuScenes, Waymo, and IMPTC we adopt the pre-defined train/test/eval data splits. For inD such splits do not exists by default, therefore we defined our own (Train: sequences 00-06,18-29, Test: sequences 07-17, Eval: sequences 30-32). For homogenity NuScenes is up-sampled from 2.0 to 10.0 Hz, inD and IMPTC are down-sampled from 25.0 to 10.0 Hz, and Waymo is untouched already at 10.0 Hz by default. To overcome coordinate system related biases or dependencies we transfered all trajectories into an independet human-ego-centric coordinate system with the position at the last input timestep is at position (0.0, 0.0), and all other input or ground truth positions are transfered related to this origin. We adapt the commonly used trajectory splitting into 3.2 s input horizon and 4.8 s forecast horizon. Longer trajectories are splitted into multiple subsplits with a step of 1 second. As a result the different dataset contains the following amount of trajectories.
+We extracted all pedestrian trajectories from NuScenes, Waymo, inD and IMPTC datasets. For NuScenes, Waymo, and IMPTC we adopt the pre-defined train/test/eval data splits. For inD such splits do not exists by default, therefore we defined our own (Train: sequences 00-06 and 18-29, Test: sequences 07-17, Eval: sequences 30-32). For homogenity NuScenes is up-sampled from 2.0 to 10.0 Hz, inD and IMPTC are down-sampled from 25.0 to 10.0 Hz. Waymo is untouched with 10.0 Hz sampling rate by default. To overcome coordinate system related biases or dependencies we transfered all trajectories into an independet human-ego-centric coordinate system with the position at the last input timestep is at position (0.0, 0.0), and all other input or ground truth positions are transfered related to this origin. We adapt the commonly used trajectory splitting into 3.2 s input horizon and 4.8 s forecast horizon. Longer trajectories are splitted into multiple subsplits with a step of 1 second. As a result the different dataset contains the following amount of trajectories.
 
 | Dataset       | Train             | Test            | Eval |
 |:-------------:|:-----------------:|:---------------:|:----:|
@@ -136,7 +134,7 @@ testing.py --target=imptc --configs=default_peds_imptc.json --gpu=0 --log --prin
 ```
 
 **Pre-trained models:**
-If you want to use a pre-trained model you must locate it into the correct subfolder structure: Starting at the defined "result_path" from the configuration file: 
+If you want to use a pre-trained model you must locate them into the correct subfolder structure: Starting at the defined "result_path" from the configuration file: 
 
 ```
 # Structure:
