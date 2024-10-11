@@ -148,5 +148,11 @@ If you want to use a pre-trained model you must locate them into the correct sub
 <a name="license"></a>
 ## License:
 This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details
- 
+
 ---
+
+## Contributors:
+
+<a href="https://github.com/kav-institute/mdn_trajectory_forecasting/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=kav-institute/mdn_trajectory_forecasting" />
+</a>
